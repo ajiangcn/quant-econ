@@ -2,7 +2,6 @@
 # pass the parameters
 # read the order to memory
 import sys
-import csv
 import datetime as dt
 import QSTK.qstkutil.qsdateutil as du
 import QSTK.qstkutil.DataAccess as da
@@ -221,12 +220,12 @@ def main(argv):
 					accumulatedPos = processOrder(accumulatedPos, order, executed_price)
 					accumulatedPos.setDate(date)
 					positionValue = getPositionVaue(accumulatedPos, price_data)
-					f.write("%s,%s\n"%(date,positionValue))
+					f.write("%s,%s,%s,%s\n"%(date.year,date.month,date.day,positionValue))
 			else:
 				# if there is no order to process, still update the date of accumulated position
 				accumulatedPos.setDate(date)
 				positionValue = getPositionVaue(accumulatedPos, price_data)
-				f.write("%s,%s\n"%(date,positionValue))
+				f.write("%s,%s,%s,%s\n"%(date.year,date.month,date.day,positionValue))
 
 
 if __name__ == '__main__':
