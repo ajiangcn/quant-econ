@@ -5,6 +5,7 @@ import sys
 import datetime as dt
 import QSTK.qstkutil.qsdateutil as du
 import QSTK.qstkutil.DataAccess as da
+import daUtil as dau
 
 class Order(object):
 	"""docstring for Order"""
@@ -80,18 +81,6 @@ def getMaximumTimeRange(orderList):
 	#return results
 	return (min, max)
 
-# get the historical price data
-def getHistoricalPriceData(symbols, startDate, endDate):
-	dt_timeofday = dt.timedelta(hours=16)
-	dt_start = dt.datetime(startDate.year, startDate.month, startDate.day)
-	dt_end = dt.datetime(endDate.year, endDate.month, endDate.day)
-	ldt_timestamps = du.getNYSEdays(dt_start, dt_end, dt_timeofday)
-	ls_keys = ['open','high','low','close','volume','actual_close']
-
-	c_dataobj = da.DataAccess('Yahoo')
-	ldf_data = c_dataobj.get_data(ldt_timestamps, symbols, ls_keys)
-	d_data = dict(zip(ls_keys, ldf_data))
-	return d_data
 
 # process the order which take a initial position, the order to be processed and the executed price
 # return the position after the order
@@ -123,7 +112,7 @@ def processOrder(beginningPos, order, executed_price):
 # get the executed price for the order
 def getExecutedPrice(order, data):
 	dt_date = dt.datetime(order.date.year, order.date.month, order.date.day, 16)
-	return data['actual_close'][order.symbol].loc[dt_date] 
+	return data['close'][order.symbol].loc[dt_date] 
 
 # get the orders for a specified date
 # the date passed in is added a time 16:00
@@ -139,10 +128,10 @@ def getOrdersForDate(date, orderList):
 
 # get the equity's actual close price for a given date
 def getEquityPriceForDate(symbol, date, data):
-	return data['actual_close'][symbol].loc[date]
+	return data['close'][symbol].loc[date]
 
 # calculate the value of a given position
-def getPositionVaue(pos, data):
+def getPositionValue(pos, data):
 	cash = pos.cash
 	date = pos.date
 	accumulatedEquityValue = 0.0
@@ -198,7 +187,7 @@ def main(argv):
 	adjustedEndDate = endDate + dt.timedelta(days=1)
 	
 	#fetch the historical price data for all the symbols in the maximux date range
-	price_data = getHistoricalPriceData(allSymbols, startDate, adjustedEndDate)
+	price_data = dau.getHistoricalPriceData(allSymbols, startDate, adjustedEndDate)
 
 	# beginning position
 	beginningEquities = dict()
@@ -219,12 +208,12 @@ def main(argv):
 					executed_price = getExecutedPrice(order, price_data)
 					accumulatedPos = processOrder(accumulatedPos, order, executed_price)
 					accumulatedPos.setDate(date)
-					positionValue = getPositionVaue(accumulatedPos, price_data)
+					positionValue = getPositionValue(accumulatedPos, price_data)
 					f.write("%s,%s,%s,%s\n"%(date.year,date.month,date.day,positionValue))
 			else:
 				# if there is no order to process, still update the date of accumulated position
 				accumulatedPos.setDate(date)
-				positionValue = getPositionVaue(accumulatedPos, price_data)
+				positionValue = getPositionValue(accumulatedPos, price_data)
 				f.write("%s,%s,%s,%s\n"%(date.year,date.month,date.day,positionValue))
 
 
