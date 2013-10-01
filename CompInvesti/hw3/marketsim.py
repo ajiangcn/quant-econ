@@ -204,12 +204,13 @@ def main(argv):
 		for date in dateList:
 			orders = getOrdersForDate(date, orderList)
 			if (len(orders) > 0):
+				positionValue = 0.0
 				for order in orders:
 					executed_price = getExecutedPrice(order, price_data)
 					accumulatedPos = processOrder(accumulatedPos, order, executed_price)
 					accumulatedPos.setDate(date)
 					positionValue = getPositionValue(accumulatedPos, price_data)
-					f.write("%s,%s,%s,%s\n"%(date.year,date.month,date.day,positionValue))
+				f.write("%s,%s,%s,%s\n"%(date.year,date.month,date.day,positionValue))
 			else:
 				# if there is no order to process, still update the date of accumulated position
 				accumulatedPos.setDate(date)

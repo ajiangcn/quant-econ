@@ -26,7 +26,7 @@ def getSharpeRatioOfValues(values):
 	dailyReturns = getDailyReturnSeq(values)
 	mean = getMeanOfReturn(dailyReturns)
 	std = getStdOfReturn(dailyReturns)
-	return math.sqrt(250)*mean/std
+	return math.sqrt(252)*mean/std
 
 
 # calculate the total reutrn of the value sequence
@@ -40,9 +40,11 @@ def getTotalReturn(values):
 def getDailyReturnSeq(values):
 	result = []
 	numOfPoints = len(values)
+	# append the first day result at the beginning
+	result.append(0.0)
 	for x in range(1, numOfPoints):
 		#result.append(math.log1p(values[x].value/values[x-1].value-1.0))
-		result.append(values[x].value/values[x-1].value-1.0)
+		result.append(np.subtract(np.divide(values[x].value,values[x-1].value),1.0))
 	return result
 
 # get the date range for the values
