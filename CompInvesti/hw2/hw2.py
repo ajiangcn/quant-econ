@@ -33,12 +33,14 @@ nan = no information about any event.
 
 def writeEventsToFile(file, events, symbols, timestamps):
     with open(file, 'wb') as f:
-        count = 0
+        dateLen = len(timestamps)
         for sym in symbols:
             for i in range(0,len(timestamps)):
                 date = timestamps[i]
                 if (events[sym].ix[date] == 1):
-                    sellDate = timestamps[i+5]
+                    seleDate = timestamps[dateLen-1]
+                    if ((i+5)<=(dateLen-1)):
+                        sellDate = timestamps[i+5]
                     # year, month, date, ticker, trade, 100
                     f.write("%s,%s,%s,%s,Buy,100\n"%(date.year,date.month,date.day,sym))
                     f.write("%s,%s,%s,%s,Sell,100\n"%(sellDate.year,sellDate.month,sellDate.day,sym))
@@ -66,7 +68,7 @@ def find_events(ls_symbols, d_data):
             f_symprice_yest = df_close[s_sym].ix[ldt_timestamps[i - 1]]
             # Event is found if yesterday's price is greater equal to 5
             # And today's price is less than 5.0
-            if f_symprice_yest >= 5.0 and f_symprice_today < 5.0:
+            if f_symprice_yest >= 10.0 and f_symprice_today < 10.0:
               df_events[s_sym].ix[ldt_timestamps[i]] = 1
               event_count += 1
 
