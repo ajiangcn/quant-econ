@@ -4,7 +4,7 @@
 @summary: Computational Investing home work 2
 '''
 
-
+import sys
 import pandas as pd
 import numpy as np
 import math
@@ -31,6 +31,18 @@ nan = no information about any event.
 1 = status bit(positively confirms the event occurence)
 """
 
+def writeEventsToFile(file, events, symbols, timestamps):
+    with open(file, 'wb') as f:
+        count = 0
+        for sym in symbols:
+            for i in range(0,len(timestamps)):
+                date = timestamps[i]
+                if (events[sym].ix[date] == 1):
+                    sellDate = timestamps[i+5]
+                    # year, month, date, ticker, trade, 100
+                    f.write("%s,%s,%s,%s,Buy,100\n"%(date.year,date.month,date.day,sym))
+                    f.write("%s,%s,%s,%s,Sell,100\n"%(sellDate.year,sellDate.month,sellDate.day,sym))
+
 
 def find_events(ls_symbols, d_data):
     ''' Finding the event dataframe '''
@@ -54,7 +66,7 @@ def find_events(ls_symbols, d_data):
             f_symprice_yest = df_close[s_sym].ix[ldt_timestamps[i - 1]]
             # Event is found if yesterday's price is greater equal to 5
             # And today's price is less than 5.0
-            if f_symprice_yest >= 9.0 and f_symprice_today < 9.0:
+            if f_symprice_yest >= 5.0 and f_symprice_today < 5.0:
               df_events[s_sym].ix[ldt_timestamps[i]] = 1
               event_count += 1
 
@@ -63,6 +75,7 @@ def find_events(ls_symbols, d_data):
 
 
 if __name__ == '__main__':
+    orderFile = sys.argv[1]
     dt_start = dt.datetime(2008, 1, 1)
     dt_end = dt.datetime(2009, 12, 31)
     ldt_timestamps = du.getNYSEdays(dt_start, dt_end, dt.timedelta(hours=16))
@@ -81,6 +94,7 @@ if __name__ == '__main__':
         d_data[s_key] = d_data[s_key].fillna(1.0)
 
     df_events = find_events(ls_symbols, d_data)
+    writeEventsToFile(orderFile, df_events, ls_symbols, ldt_timestamps)
     print "Creating Study"
     ep.eventprofiler(df_events, d_data, i_lookback=20, i_lookforward=20,
                 s_filename='MyEventStudy0912.pdf', b_market_neutral=True, b_errorbars=True,

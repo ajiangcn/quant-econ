@@ -170,7 +170,7 @@ def loadOrders(file):
 # main function for the market simulation function
 def main(argv):
 	'''Main function'''
-	intialBalance = argv[0]
+	initialBalance = float(argv[0])
 	orderFile = argv[1]
 	outputFile = argv[2]
 
@@ -193,7 +193,7 @@ def main(argv):
 	beginningEquities = dict()
 	for symbol in allSymbols:
 		beginningEquities[symbol] = 0
-	beginningPos = Position(startDate, 1000000.0, beginningEquities)
+	beginningPos = Position(startDate, initialBalance, beginningEquities)
 	accumulatedPos = beginningPos
 
 	# simulate the orders, open the output file and writ the daily balance to the outputfile
