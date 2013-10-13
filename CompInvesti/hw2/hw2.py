@@ -75,6 +75,35 @@ def find_events(ls_symbols, d_data):
     print ("Total event number is %s." %(event_count))
     return df_events
 
+def find_events_using_bollingerBandIndicator(ls_symbols, d_data):
+    '''Find event using bollinger band'''
+    df_close = d_data['close']
+    ts_market = df_close['SPY']
+    event_count = 0
+    
+    df_events = copy.deepcopy(df_close)
+    df_events = df_events * np.NAN
+
+    ldt_timestamps = df_close.index
+
+    spyPrice = df_close['SPY']
+    spyMean = pd.rolling_mean(spyPrice, 20)
+    spyStd = pd.rolling_std(spyPrice, 20)
+    spyBollinger = (spyPrice-spyMean)/spyStd
+
+    for s_sym in ls_symbols:
+        symprice = df_close[s_sym]
+        mean = pd.rolling_mean(symprice, 20)
+        std = pd.rolling_std(symprice, 20)
+        bollingerVals = (symprice-mean)/std
+        for i in range(1, len(ldt_timestamps)):
+            if(bollingerVals.ix[ldt_timestamps[i]] <= -2.0 and bollingerVals.ix[ldt_timestamps[i-1]] >= -2.0 and spyBollinger.ix[ldt_timestamps[i]] >= 1.5):
+                df_events[s_sym].ix[ldt_timestamps[i]] = 1
+                event_count += 1
+
+    print ("Total event number is %s."%(event_count))
+    return df_events
+
 
 if __name__ == '__main__':
     orderFile = sys.argv[1]
@@ -95,7 +124,8 @@ if __name__ == '__main__':
         d_data[s_key] = d_data[s_key].fillna(method='bfill')
         d_data[s_key] = d_data[s_key].fillna(1.0)
 
-    df_events = find_events(ls_symbols, d_data)
+    #df_events = find_events(ls_symbols, d_data)
+    df_events = find_events_using_bollingerBandIndicator(ls_symbols, d_data)
     writeEventsToFile(orderFile, df_events, ls_symbols, ldt_timestamps)
     print "Creating Study"
     ep.eventprofiler(df_events, d_data, i_lookback=20, i_lookforward=20,
